@@ -6,7 +6,7 @@ from csv import DictReader
 from biothings.utils.dataload import open_anyfile
 
 DATA_SCHEMA = ('chrom', 'start', 'end', 'ncer_percentile')
-SOURCE_NAME = 'julia'
+SOURCE_NAME = 'mvcgi'
 
 
 def load_data(data_folder):
