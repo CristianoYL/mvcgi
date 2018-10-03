@@ -34,9 +34,3 @@ def load_data(data_folder):
                 '_id': k,
                 SOURCE_NAME: v
             }
-
-
-g = load_data('/Users/yin.li/Downloads/')
-print(next(g))
-print(next(g))
-print(next(g))
