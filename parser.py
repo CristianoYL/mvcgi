@@ -11,7 +11,7 @@ SOURCE_NAME = 'julia'
 
 def load_data(data_folder):
 
-    input_file = os.path.join(data_folder, 'julia_data.txt')
+    input_file = os.path.join(data_folder, 'julia_data')
     assert os.path.exists(input_file), f'Cannot find input file {input_file}'
     with open_anyfile(input_file) as in_f:
         # field names

@@ -1,8 +1,8 @@
 {
     "version": "0.1",
     "dumper" : {
-        "data_url" : "http://localhost:8080/data/julia_data.txt",
-        "uncompress" : false
+        "data_url" : "http://localhost:8080/data/julia_data.gz",
+        "uncompress" : true
     },
     "uploader" : {
         "parser" : "parser:load_data",
