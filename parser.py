@@ -3,59 +3,40 @@ import unicodedata
 from collections import defaultdict
 
 from csv import DictReader
-from biothings.utils.dataload import dict_sweep, open_anyfile
+from biothings.utils.dataload import open_anyfile
+
+DATA_SCHEMA = ('chrom', 'start', 'end', 'ncer_percentile')
+SOURCE_NAME = 'julia'
 
 
 def load_data(data_folder):
 
-    input_file = os.path.join(data_folder,"cgi_biomarkers_per_variant.tsv")
-    assert os.path.exists(input_file), "Can't find input file '%s'" % input_file
+    input_file = os.path.join(data_folder, 'julia_data.txt')
+    assert os.path.exists(input_file), f'Cannot find input file {input_file}'
     with open_anyfile(input_file) as in_f:
-
+        # field names
+        fields = DATA_SCHEMA
         # Remove duplicated lines if any
-        header = next(in_f).strip().split('\t')
         lines = set(list(in_f))
-        reader = DictReader(lines, fieldnames=header, delimiter='\t')
+        reader = DictReader(lines, fieldnames=fields, delimiter='\t')
 
         results = defaultdict(list)
         for row in reader:
-
-            variant = {}
-
-            # Skip
-            if 'gDNA' not in row or row['gDNA'] == "":
-                continue
-
-            # Skip variants that are not mutations
-            if 'Alteration type' not in row or row['Alteration type'] != 'MUT':
-                continue
-
-            # Use gDNA as variant identifier
-            variant['_id'] = row['gDNA']
-            variant['cgi'] = {}
-
-            for k in [
-                'region', 'cDNA', 'Evidence level', 'transcript', 'Gene', ('individual_mutation', 'protein_change'), 'Primary Tumor type',
-                ('Drug full name', 'drug'), 'Source', 'Association']:
-
-                if isinstance(k, tuple):
-                    new_k = k[1]
-                    old_k = k[0]
-                else:
-                    new_k = k.lower().replace(' ', '_')
-                    old_k = k
-
-                variant['cgi'][new_k] = unicodedata.normalize("NFKD", row.get(old_k, None))
-
-            variant = dict_sweep(variant, vals=['', 'null', 'N/A', None, [], {}])
-            results[variant['_id']].append(variant)
+            # construct identifier (e.g. chr1:g.678900_679000)
+            _id = f'{row["chrom"]}:g.{row["start"]}_{row["end"]}'
+            variant = {k: unicodedata.normalize("NFKD", v) for k, v in row.items()}
+            # variant = dict_sweep(variant, vals=['', 'null', 'N/A', None, [], {}])
+            results[_id].append(variant)
 
         # Merge duplications
-        for v in results.values():
-            if len(v) == 1:
-                yield v[0]
-            else:
-                yield {
-                    '_id': v[0]['_id'],
-                    'cgi': [i['cgi'] for i in v]
-                }
+        for k, v in results.items():
+            yield {
+                '_id': k,
+                SOURCE_NAME: v
+            }
+
+
+g = load_data('/Users/yin.li/Downloads/')
+print(next(g))
+print(next(g))
+print(next(g))
